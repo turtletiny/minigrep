@@ -9,15 +9,15 @@ Not intended as an improvement to grep, but rather a small project to practice l
 
 ### General
 
-[ ] regex support
-[ ] parsing multiple flags
-[ ] reading environment variables
+- [ ] regex support
+- [ ] parsing multiple flags
+- [ ] reading environment variables
 
-[ ] -v
-[ ] -i
-[ ] -r
-[ ] -n
-[ ] -x
+- [ ] -v
+- [ ] -i
+- [ ] -r
+- [ ] -n
+- [ ] -x
 
 
 
