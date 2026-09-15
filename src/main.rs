@@ -38,6 +38,7 @@ struct Config {
     pub query: String,
     pub file_path: String,
     pub ignore_case: bool,
+    // pub inverse: bool,
 }
 
 impl Config {
@@ -50,6 +51,15 @@ impl Config {
             query: args[1].clone(),
             file_path: args[2].clone(),
             ignore_case: env::var("IGNORE_CASE").is_ok(),
+            // inverse: ,
         })
+    }
+}
+
+fn flags(args: &[String]) -> Option<String> {
+    if args[1].as_bytes()[0] == b'-' {
+        Some(args[2].clone())
+    } else {
+        None
     }
 }
