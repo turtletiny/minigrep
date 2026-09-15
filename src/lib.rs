@@ -71,6 +71,4 @@ bObbS";
             search_inverse(query, contents)
         );
     }
-
-
 }
