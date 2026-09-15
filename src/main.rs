@@ -1,5 +1,5 @@
 use minigrep::{search, search_case_insensitive};
-use std::collections::HashMap;
+use minigrep::{search_inverse, search_inverse_insensitive};
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -22,8 +22,12 @@ fn main() {
 fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
 
-    let results = if config.ignore_case {
+    let results = if config.ignore_case && config.inverse {
+        search_inverse_insensitive(&config.query, &contents)
+    } else if config.ignore_case {
         search_case_insensitive(&config.query, &contents)
+    } else if config.inverse {
+        search_inverse(&config.query, &contents)
     } else {
         search(&config.query, &contents)
     };
@@ -39,33 +43,57 @@ struct Config {
     pub query: String,
     pub file_path: String,
     pub ignore_case: bool,
-    // pub inverse: bool,
+    pub inverse: bool,
 }
 
 impl Config {
     fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
+        let argc = args.len();
+        if argc < 3 {
+            return Err("Not enough arguments");
         }
 
         let flags = parse_flags(args);
+        let (query, file_path) = if flags.is_empty() {
+            (args[1].clone(), args[2].clone())
+        } else {
+            (args[2].clone(), args[3].clone())
+        };
 
-        Ok(Self {
-            query: args[1].clone(),
-            file_path: args[2].clone(),
-            ignore_case: env::var("IGNORE_CASE").is_ok(),
-            // inverse: ,
-        })
+        let mut default_config = Config {
+            query,
+            file_path,
+            ignore_case: false,
+            inverse: false,
+        };
+
+        for c in &flags[..] {
+            let flag = match char_to_flag(*c) {
+                Some(f) => f,
+                None => return Err("Invalid flag"),
+            };
+
+            default_config.update(flag);
+        }
+
+        Ok(default_config)
+    }
+
+    fn update(&mut self, flag: Flag) {
+        match flag {
+            Flag::i => self.ignore_case = true,
+            Flag::v => self.inverse = true,
+        }
     }
 }
 
-struct FlagConfig {
-    inverse: bool,
-    case_insensitive: bool,
-    line_numbers: bool,
+#[allow(non_camel_case_types)]
+pub enum Flag {
+    i,
+    v,
 }
 
-fn parse_flags(args: &[String]) -> Vec<char> {
+pub fn parse_flags(args: &[String]) -> Vec<char> {
     let mut flags = Vec::new();
     let mut i = 1;
 
@@ -77,6 +105,14 @@ fn parse_flags(args: &[String]) -> Vec<char> {
     }
 
     flags
+}
+
+pub fn char_to_flag(c: char) -> Option<Flag> {
+    match c {
+        'i' => Some(Flag::i),
+        'v' => Some(Flag::v),
+        _ => None,
+    }
 }
 
 #[cfg(test)]

@@ -1,3 +1,4 @@
+// no flag
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut results = Vec::new();
 
@@ -30,6 +31,20 @@ pub fn search_inverse<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 
     for line in contents.lines() {
         if !line.contains(query) {
+            results.push(line);
+        }
+    }
+
+    results
+}
+
+// -iv
+pub fn search_inverse_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let query = query.to_lowercase();
+    let mut results = Vec::new();
+
+    for line in contents.lines() {
+        if !line.to_lowercase().contains(&query) {
             results.push(line);
         }
     }
