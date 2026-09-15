@@ -1,4 +1,5 @@
 use minigrep::{search, search_case_insensitive};
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -47,6 +48,8 @@ impl Config {
             return Err("not enough arguments");
         }
 
+        let flags = parse_flags(args);
+
         Ok(Self {
             query: args[1].clone(),
             file_path: args[2].clone(),
@@ -56,10 +59,41 @@ impl Config {
     }
 }
 
-fn flags(args: &[String]) -> Option<String> {
-    if args[1].as_bytes()[0] == b'-' {
-        Some(args[2].clone())
-    } else {
-        None
+struct FlagConfig {
+    inverse: bool,
+    case_insensitive: bool,
+    line_numbers: bool,
+}
+
+fn parse_flags(args: &[String]) -> Vec<char> {
+    let mut flags = Vec::new();
+    let mut i = 1;
+
+    while args[i].as_bytes()[0] == b'-' {
+        for j in 1..args[i].len() {
+            flags.push(args[i].as_bytes()[j] as char);
+        }
+        i += 1;
+    }
+
+    flags
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn flag_test() {
+        let args = vec![
+            String::from("ignore"),
+            String::from("-f"),
+            String::from("-i"),
+            String::from("-zxi"),
+            String::from("pattern"),
+            String::from("file.txt"),
+        ];
+
+        assert_eq!(vec!['f', 'i', 'z', 'x', 'i'], parse_flags(&args))
     }
 }

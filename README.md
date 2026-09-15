@@ -12,7 +12,11 @@ Not intended as an improvement to grep, but rather a small project to practice l
 - [ ] regex support
 - [ ] parsing multiple flags
 - [ ] reading environment variables
+- [ ] time taken (optional, can be configured)
 
+### Flags
+
+- [ ] --help
 - [ ] -v
 - [ ] -i
 - [ ] -r
