@@ -4,8 +4,11 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::process;
+use std::time::Instant;
 
 fn main() {
+    let start_time = Instant::now();
+
     let args: Vec<String> = env::args().collect();
 
     let config = Config::build(&args).unwrap_or_else(|err| {
@@ -17,6 +20,8 @@ fn main() {
         eprintln!("Application error: {e}");
         process::exit(69);
     }
+
+    println!("Took: {}s", start_time.elapsed().as_secs_f32());
 }
 
 fn run(config: Config) -> Result<(), Box<dyn Error>> {
@@ -53,12 +58,13 @@ impl Config {
             return Err("Not enough arguments");
         }
 
-        let flags = parse_flags(args);
-        let (query, file_path) = if flags.is_empty() {
-            (args[1].clone(), args[2].clone())
-        } else {
-            (args[2].clone(), args[3].clone())
-        };
+        let (flags, path_idx) = parse_flags_and_query_index(args);
+        if path_idx + 2 != argc {
+            return Err("pattern or path not provided");
+        }
+
+        let query = args[path_idx].clone();
+        let file_path = args[path_idx + 1].clone();
 
         let mut default_config = Config {
             query,
@@ -93,18 +99,18 @@ pub enum Flag {
     v,
 }
 
-pub fn parse_flags(args: &[String]) -> Vec<char> {
+pub fn parse_flags_and_query_index(args: &[String]) -> (Vec<char>, usize) {
     let mut flags = Vec::new();
-    let mut i = 1;
+    let mut query_idx = 1;
 
-    while args[i].as_bytes()[0] == b'-' {
-        for j in 1..args[i].len() {
-            flags.push(args[i].as_bytes()[j] as char);
+    while args[query_idx].as_bytes()[0] == b'-' {
+        for j in 1..args[query_idx].len() {
+            flags.push(args[query_idx].as_bytes()[j] as char);
         }
-        i += 1;
+        query_idx += 1;
     }
 
-    flags
+    (flags, query_idx)
 }
 
 pub fn char_to_flag(c: char) -> Option<Flag> {
@@ -130,6 +136,9 @@ mod tests {
             String::from("file.txt"),
         ];
 
-        assert_eq!(vec!['f', 'i', 'z', 'x', 'i'], parse_flags(&args))
+        assert_eq!(
+            vec!['f', 'i', 'z', 'x', 'i'],
+            parse_flags_and_query_index(&args).0
+        )
     }
 }
