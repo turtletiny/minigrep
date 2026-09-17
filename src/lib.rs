@@ -1,14 +1,15 @@
 // no flag
-pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-
-    results
+pub fn search<'a>(query: &'a str, contents: &'a str) -> Vec<&'a str> {
+    contents
+        .lines()
+        .filter(|line| {
+            if true {
+                line.contains(query)
+            } else {
+                !line.contains(query)
+            }
+        })
+        .collect()
 }
 
 // -i
@@ -86,4 +87,10 @@ bObbS";
             search_inverse(query, contents)
         );
     }
+}
+
+fn test_closure() {
+    let closure = |num: u32| -> u32 { num };
+
+    let closure_2 = |num2| num2 + 1;
 }
