@@ -9,7 +9,7 @@ A continuation of the minigrep project in the Rust Book
 
 ## To-Do
 
-cannot accept multiple files
+todo!(program insta exits upon seeing invalid file path, rather than moving onto the next file path)
 
 ### General
 

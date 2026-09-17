@@ -89,8 +89,3 @@ bObbS";
     }
 }
 
-fn test_closure() {
-    let closure = |num: u32| -> u32 { num };
-
-    let closure_2 = |num2| num2 + 1;
-}

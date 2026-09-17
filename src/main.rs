@@ -9,12 +9,15 @@ use std::time::Instant;
 fn main() {
     let start_time = Instant::now();
 
-    let config = Config::build(env::args()).unwrap_or_else(|err| {
-        eprintln!("Problem parsing arguments: {err}");
+    let args: Vec<String> = env::args().collect();
+
+    let config = Config::build(&args).unwrap_or_else(|e| {
+        eprintln!("Problem parsing args: {e}");
         process::exit(69);
     });
 
-    if let Err(e) = run(config) {
+
+    if let Err(e) = run(&config) {
         eprintln!("Application error: {e}");
         process::exit(69);
     }
@@ -22,21 +25,25 @@ fn main() {
     println!("Took: {}s", start_time.elapsed().as_secs_f32());
 }
 
-fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(config.file_path)?;
+fn run(config: &Config) -> Result<(), Box<dyn Error>> {
+    for f in &config.file_paths {
+        let contents = fs::read_to_string(f)?;
 
-    let results = if config.ignore_case && config.inverse {
-        search_inverse_insensitive(&config.query, &contents)
-    } else if config.ignore_case {
-        search_case_insensitive(&config.query, &contents)
-    } else if config.inverse {
-        search_inverse(&config.query, &contents)
-    } else {
-        search(&config.query, &contents)
-    };
+        todo!(program insta exits upon seeing invalid file path, rather than moving onto the next file path);
 
-    for line in results {
-        println!("{line}");
+        let results = if config.ignore_case && config.inverse {
+            search_inverse_insensitive(&config.query, &contents)
+        } else if config.ignore_case {
+            search_case_insensitive(&config.query, &contents)
+        } else if config.inverse {
+            search_inverse(&config.query, &contents)
+        } else {
+            search(&config.query, &contents)
+        };
+
+        for line in results {
+            println!("{line}");
+        }
     }
 
     Ok(())
@@ -49,41 +56,80 @@ struct Config {
     pub inverse: bool,
 }
 
+// impl Config {
+//     fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+//         args.next();
+//
+//         let query = match args.next()?;
+//         let file_path = match args.next() {
+//             Some(arg) => arg,
+//             None => return Err("No file path"),
+//         };
+//
+//         let ignore_case = env::var("IGNORE_CASE").is_ok();
+//
+//         Ok(Config {
+//             query,
+//             file_path,
+//             ignore_case,
+//             inverse: false,
+//         })
+//     }
+
 impl Config {
-    fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
-        args.next();
-
-        let query = match args.next() {
-            Some(arg) => arg,
-            None => return Err("No query string"),
-        };
-
-        let file_path = match args.next() {
-            Some(arg) => arg,
-            None => return Err("No file path"),
-        };
-
-        let ignore_case = env::var("IGNORE_CASE").is_ok();
-
-        Ok(Config {
-            query,
-            file_path,
-            ignore_case,
-            inverse: false,
-        })
-    }
-
     fn build(args: &[String]) -> Result<Config, &'static str> {
         let arg_count = args.len();
         if arg_count < 3 {
             return Err("Not enough arguments");
         }
 
+        let mut ignore_case = false;
+        let mut inverse = false;
+
         let mut i = 1;
-        // while args[i].into_bytes().[0] == b'-' {
-        //     let (flags_vec, query_idx) = parse_flags_and_query_index(args);
+        while i < arg_count && args[i].starts_with('-') {
+            match args[i].as_bytes().get(1) {
+                Some(b'v') => inverse = true,
+                Some(b'i') => ignore_case = true,
+                Some(_) => return Err("Invalid flag"),
+                None => break,
+            }
+            i += 1;
+        }
+
+        let query = match args.get(i) {
+            Some(s) => s.clone(),
+            None => return Err("No query found"),
+        };
+        i += 1;
+
+        let mut file_paths = vec![args[i].clone()];
+        i += 1;
+
+        while i < arg_count && !args[i].starts_with('-') {
+            file_paths.push(args[i].clone());
+            i += 1;
+        }
+
+        Ok(Config {
+            query,
+            file_paths,
+            ignore_case,
+            inverse,
+        })
     }
 }
+
+// while args[i].into_bytes().[0] == b'-' {
+//     let (flags_vec, query_idx) = parse_flags_and_query_index(args);
+
+// fn idk() {
+//     match c {
+//         'i' => update_config(),
+//         'b' => update_config(),
+//         _ => return Err("Invalid flag (--help for more info)");
+//     }
+// }
 
 // fn parse_input(&)
 
@@ -121,69 +167,24 @@ impl Config {
 //     Ok(default_config)
 // }
 
-fn update(&mut self, flag: Flag) {
-    match flag {
-        Flag::i => self.ignore_case = true,
-        Flag::v => self.inverse = true,
-    }
-}
-
-fn char_to_flag(c: u8) -> Result<Flag, Err(String)> {
-    match c {
-        b'i' => Ok(Flag::i),
-        b'v' => Ok(Flag::v),
-        _ => Err("Invalid flag"),
-    }
-}
-
-#[allow(non_camel_case_types)]
-pub enum Flag {
-    i,
-    v,
-    // help,
-}
-
-pub fn parse_flags_and_query_index(args: &[String]) -> (Vec<Flag>, usize) {
-    let mut flags = Vec::new();
-    let mut query_idx = 1;
-
-    while args[query_idx].as_bytes()[0] == b'-' {
-        for j in 1..args[query_idx].len() {
-            let flag = char_to_flag(args[query_idx].into_bytes()[j])?;
-            flags.push(flag);
-        }
-        query_idx += 1;
-    }
-
-    (flags, query_idx)
-}
-
-pub fn char_to_flag(c: char) -> Option<Flag> {
-    match c {
-        'i' => Some(Flag::i),
-        'v' => Some(Flag::v),
-        _ => None,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn flag_test() {
-        let args = vec![
-            String::from("ignore"),
-            String::from("-f"),
-            String::from("-i"),
-            String::from("-zxi"),
-            String::from("pattern"),
-            String::from("file.txt"),
-        ];
-
-        assert_eq!(
-            vec!['f', 'i', 'z', 'x', 'i'],
-            parse_flags_and_query_index(&args).0
-        )
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//
+//     #[test]
+//     fn flag_test() {
+//         let args = vec![
+//             String::from("ignore"),
+//             String::from("-f"),
+//             String::from("-i"),
+//             String::from("-zxi"),
+//             String::from("pattern"),
+//             String::from("file.txt"),
+//         ];
+//
+//         // assert_eq!(
+//         //     vec!['f', 'i', 'z', 'x', 'i'],
+//         //     parse_flags_and_query_index(&args).0
+//         // )
+//     }
+// }
