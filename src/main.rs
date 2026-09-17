@@ -29,7 +29,6 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     for f in &config.file_paths {
         let contents = fs::read_to_string(f)?;
 
-        todo!(program insta exits upon seeing invalid file path, rather than moving onto the next file path);
 
         let results = if config.ignore_case && config.inverse {
             search_inverse_insensitive(&config.query, &contents)

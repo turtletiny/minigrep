@@ -9,7 +9,9 @@ A continuation of the minigrep project in the Rust Book
 
 ## To-Do
 
-todo!(program insta exits upon seeing invalid file path, rather than moving onto the next file path)
+todo!(program insta exits upon seeing invalid file path, rather than moving onto the next file path):wq
+
+bug: accept -ivg (mutli flags, 1 arg)
 
 ### General
 
