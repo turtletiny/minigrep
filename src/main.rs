@@ -4,9 +4,7 @@ use std::fs;
 use std::process;
 use std::time::Instant;
 
-
-use minigrep::{search, Config};
-
+use minigrep::{Config, search};
 
 fn main() {
     let start_time = Instant::now();
@@ -36,7 +34,7 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
             }
         };
 
-        let iter = search(&config.query, &contents, &config);
+        let iter = search(&config.query, &contents, config);
         for (idx, line) in iter {
             println!("{idx}: {line}");
         }
@@ -44,4 +42,3 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-

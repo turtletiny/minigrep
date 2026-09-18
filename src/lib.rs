@@ -66,15 +66,17 @@ pub fn search<'a>(
         .lines()
         .enumerate()
         .filter(move |(_idx, line)| {
-            if config.inverse && config.ignore_case {
-                !line.to_lowercase().contains(&query)
-            } else if config.inverse {
-                !line.contains(&query)
-            } else if !config.inverse && config.ignore_case {
+            let mut filter_res = if config.ignore_case {
                 line.to_lowercase().contains(&query)
             } else {
                 line.contains(&query)
+            };
+
+            if config.inverse {
+                filter_res = !filter_res;
             }
+
+            filter_res
         })
         .map(|(idx, line)| (idx + 1, line))
 }
