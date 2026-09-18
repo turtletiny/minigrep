@@ -16,7 +16,6 @@ fn main() {
         process::exit(69);
     });
 
-
     if let Err(e) = run(&config) {
         eprintln!("Application error: {e}");
         process::exit(69);
@@ -24,11 +23,16 @@ fn main() {
 
     println!("Took: {}s", start_time.elapsed().as_secs_f32());
 }
-
 fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     for f in &config.file_paths {
-        let contents = fs::read_to_string(f)?;
 
+        let contents = match fs::read_to_string(f) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("Application error: {e}");
+                continue;
+            }
+        };
 
         let results = if config.ignore_case && config.inverse {
             search_inverse_insensitive(&config.query, &contents)
