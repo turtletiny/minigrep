@@ -91,11 +91,12 @@ impl Config {
 
         let mut i = 1;
         while i < arg_count && args[i].starts_with('-') {
-            match args[i].as_bytes().get(1) {
-                Some(b'v') => inverse = true,
-                Some(b'i') => ignore_case = true,
-                Some(_) => return Err("Invalid flag"),
-                None => break,
+            for b in args[i].as_bytes().iter().skip(1) {
+                match b {
+                    b'v' => inverse = true,
+                    b'i' => ignore_case = true,
+                    _ => return Err("unrecognised flag")
+                }
             }
             i += 1;
         }
