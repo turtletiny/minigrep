@@ -11,12 +11,13 @@ A continuation of the minigrep project in the Rust Book
 
 ### General
 
+- [ ] highlight found pattern
 - [ ] regex support
+- [ ] directory searching
 - [x] parsing multiple flags
-- [ ] reading environment variables
 - [X] time taken 
 - [ ] config file 
-- [ ] highlight found pattern
+- [ ] reading environment variables
 
 ### Flags
 

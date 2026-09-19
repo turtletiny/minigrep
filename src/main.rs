@@ -42,3 +42,24 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+
+fn walk_dir() -> std::io::Result<()> {
+    let entries = fs::read_dir(".")?; 
+
+    for path in entries {
+        let e = path?;
+        println!("{:?}", e.path())
+
+    }
+
+    Ok(())
+}
+
+
+// "file": can be either a single file, or a directory
+// "dir_name"
+// if it ends in /, its a dir
+// if not, it should be a file
+// if no file with that name is found,  then check for a matching dir
+// if a matchign dir is found, treat it as a dir, else ERR

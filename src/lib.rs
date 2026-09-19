@@ -51,6 +51,17 @@ impl Config {
             inverse,
         })
     }
+
+    // args is a string slice from [i..], aka the start of all paths to search
+    pub fn build_file_paths(&mut self, args: &[String]) {
+        for i in args {
+            if i.ends_with("/") {
+                // search every file in the dir, ignoring dirs, and push to .file_paths
+            } else {
+                self.file_paths.push(i.clone());
+            }
+        }
+    }
 }
 pub fn search<'a>(
     query: &str,
@@ -79,47 +90,6 @@ pub fn search<'a>(
             filter_res
         })
         .map(|(idx, line)| (idx + 1, line))
-}
-
-// -i
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            results.push(line);
-        }
-    }
-
-    results
-}
-
-// -v
-pub fn search_inverse<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if !line.contains(query) {
-            results.push(line);
-        }
-    }
-
-    results
-}
-
-// -iv
-pub fn search_inverse_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if !line.to_lowercase().contains(&query) {
-            results.push(line);
-        }
-    }
-
-    results
 }
 
 // #[cfg(test)]
