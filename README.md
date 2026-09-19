@@ -9,6 +9,10 @@ A continuation of the minigrep project in the Rust Book
 
 ## To-Do
 
+- continue walkdir implementation
+- When searching multiple files, have the file name above the results
+
+
 ### General
 
 - [ ] highlight found pattern
