@@ -27,17 +27,23 @@ fn main() {
 
 fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     for f in &config.file_paths {
-        let contents = match fs::read_to_string(f) {
-            Ok(c) => c,
-            Err(e) => {
-                eprintln!("Application error: {e}");
-                continue;
-            }
-        };
+        let path = Path::new(f);
 
-        let iter = search(&config.query, &contents, config);
-        for (idx, line) in iter {
-            println!("{idx}: {line}");
+        if path.is_dir() {
+            walk_dir(f, config);
+        } else {
+            let contents = match fs::read_to_string(f) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Application error: {e}");
+                    continue;
+                }
+            };
+
+            let iter = search(&config.query, &contents, config);
+            for (idx, line) in iter {
+                println!("{idx}: {line}");
+            }
         }
     }
 
