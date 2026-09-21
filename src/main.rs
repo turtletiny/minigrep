@@ -1,6 +1,7 @@
 use std::env;
 use std::error::Error;
 use std::fs;
+use std::path::Path;
 use std::process;
 use std::time::Instant;
 
@@ -43,23 +44,70 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn grep_1_file(path: &Path, config: &Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(path)?;
 
-fn walk_dir() -> std::io::Result<()> {
-    let entries = fs::read_dir(".")?; 
-
-    for path in entries {
-        let e = path?;
-        println!("{:?}", e.path())
-
+    let iter = search(&config.query, &contents, config);
+    for (idx, line) in iter {
+        println!("{idx}: {line}");
     }
 
     Ok(())
 }
 
+fn walk_dir(dir: &String, config: &Config) -> std::io::Result<()> {
+    let entries = fs::read_dir(dir)?;
 
-// "file": can be either a single file, or a directory
-// "dir_name"
-// if it ends in /, its a dir
-// if not, it should be a file
-// if no file with that name is found,  then check for a matching dir
-// if a matchign dir is found, treat it as a dir, else ERR
+    for path in entries {
+        let e = path?;
+        if !e.file_type()?.is_dir() {
+            println!("{e:?}\n");
+            grep_1_file(&e.path(), config);
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+
+mod test {
+    use super::*;
+
+    #[test]
+    // fn test_walk_dir() {
+    //     walk_dir(&".".to_string());
+    // }
+    #[test]
+    // fn test_grep_1_file() {
+    //     let config = Config {
+    //         query: "pig".to_string(),
+    //         file_paths: Vec::new(),
+    //         ignore_case: true,
+    //         inverse: false,
+    //     };
+    //     grep_1_file(&"smol.txt".to_string(), &config).unwrap();
+    // }
+    fn test_walk_dir() {
+        let config = Config {
+            query: "pig".to_string(),
+            file_paths: Vec::new(),
+            ignore_case: true,
+            inverse: false,
+        };
+        walk_dir(&".".to_string(), &config);
+    }
+}
+
+// if its a dir, ignore
+
+/*
+STEP 1: IMPLEMENT WITH THE ASSUMPTION THAT A DIR MUST END IN "/"
+
+"file": can be either a single file, or a directory
+"dir_name"
+if it ends in /, its a dir
+if not, it should be a file
+if no file with that name is found,  then check for a matching dir
+if a matchign dir is found, treat it as a dir, else ERR
+ */

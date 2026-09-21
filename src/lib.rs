@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fs;
+use std::path::Path;
 
 pub struct Config {
     pub query: String,
@@ -55,8 +56,8 @@ impl Config {
     // args is a string slice from [i..], aka the start of all paths to search
     pub fn build_file_paths(&mut self, args: &[String]) {
         for i in args {
-            if i.ends_with("/") {
-                // search every file in the dir, ignoring dirs, and push to .file_paths
+            if Path::new(i).is_dir() {
+                // walk the dir
             } else {
                 self.file_paths.push(i.clone());
             }
