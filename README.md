@@ -9,14 +9,12 @@ A continuation of the minigrep project in the Rust Book
 
 ## To-Do
 
-- When searching multiple files, have the file name above the results
-
 
 ### General
 
 - [ ] highlight found pattern
 - [ ] regex support
-- [ ] directory searching
+- [X] directory searching
 - [x] parsing multiple flags
 - [X] time taken 
 - [ ] config file 

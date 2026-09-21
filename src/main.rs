@@ -30,22 +30,9 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
         let path = Path::new(f);
 
         if path.is_dir() {
-            walk_dir(f, config);
+            walk_dir(f, config)?
         } else {
-            let contents = match fs::read_to_string(f) {
-                Ok(c) => c,
-                Err(e) => {
-                    eprintln!("Application error: {e}");
-                    continue;
-                }
-            };
-
-            let iter = search(&config.query, &contents, config);
-            println!("{}", path.display());
-            for (idx, line) in iter {
-                println!("{idx}: {line}");
-            }
-            println!();
+            grep_1_file(path, config)?
         }
     }
 
@@ -55,6 +42,7 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 fn grep_1_file(path: &Path, config: &Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(path)?;
 
+    println!("{}", path.display());
     let iter = search(&config.query, &contents, config);
     for (idx, line) in iter {
         println!("{idx}: {line}");
@@ -70,7 +58,7 @@ fn walk_dir(dir: &String, config: &Config) -> std::io::Result<()> {
     for path in entries {
         let e = path?;
         if !e.file_type()?.is_dir() {
-            println!("{}",e.path().display());
+            println!("{}", e.path().display());
             grep_1_file(&e.path(), config);
         }
     }
