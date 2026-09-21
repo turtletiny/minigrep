@@ -41,9 +41,11 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
             };
 
             let iter = search(&config.query, &contents, config);
+            println!("{}", path.display());
             for (idx, line) in iter {
                 println!("{idx}: {line}");
             }
+            println!();
         }
     }
 
@@ -57,6 +59,7 @@ fn grep_1_file(path: &Path, config: &Config) -> Result<(), Box<dyn Error>> {
     for (idx, line) in iter {
         println!("{idx}: {line}");
     }
+    println!();
 
     Ok(())
 }
@@ -67,7 +70,7 @@ fn walk_dir(dir: &String, config: &Config) -> std::io::Result<()> {
     for path in entries {
         let e = path?;
         if !e.file_type()?.is_dir() {
-            println!("{e:?}\n");
+            println!("{}",e.path().display());
             grep_1_file(&e.path(), config);
         }
     }

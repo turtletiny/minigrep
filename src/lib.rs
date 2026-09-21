@@ -54,15 +54,23 @@ impl Config {
     }
 
     // args is a string slice from [i..], aka the start of all paths to search
-    pub fn build_file_paths(&mut self, args: &[String]) {
-        for i in args {
-            if Path::new(i).is_dir() {
-                // walk the dir
-            } else {
-                self.file_paths.push(i.clone());
-            }
-        }
-    }
+    // pub fn build_file_paths(&mut self, args: &[String]) -> std::io::Result<()>{
+    //     for i in args {
+    //         if Path::new(i).is_dir() {
+    //             for path in fs::read_dir(i)? {
+    //                 let e = path?;
+    //                 if !e.file_type()?.is_dir() {
+    //                     self.file_paths.push();
+    //                 }
+    //
+    //             }
+    //         } else {
+    //             self.file_paths.push(i.clone());
+    //         }
+    //     }
+    //
+    //     Ok(())
+    // }
 }
 pub fn search<'a>(
     query: &str,
