@@ -8,11 +8,13 @@ A continuation of the minigrep project in the Rust Book
 
 
 ## To-Do
+- add a flag for showing STAT (default should be OFF, for performance reasons)
+
 
 
 ### General
 
-- [ ] highlight found pattern
+- [ ] highlight found pattern 
 - [ ] regex support
 - [X] directory searching
 - [x] parsing multiple flags

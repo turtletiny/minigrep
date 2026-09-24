@@ -1,7 +1,10 @@
-use std::error::Error;
-use std::fs;
-use std::path::Path;
+// const CONFIG_PATH: &str = "config.toml";
 
+use std::fs;
+use std::os::unix::fs::PermissionsExt;
+use std::path::{Path, PathBuf};
+
+#[derive(Debug)]
 pub struct Config {
     pub query: String,
     pub file_paths: Vec<String>,
@@ -52,35 +55,13 @@ impl Config {
             inverse,
         })
     }
-
-    // args is a string slice from [i..], aka the start of all paths to search
-    // pub fn build_file_paths(&mut self, args: &[String]) -> std::io::Result<()>{
-    //     for i in args {
-    //         if Path::new(i).is_dir() {
-    //             for path in fs::read_dir(i)? {
-    //                 let e = path?;
-    //                 if !e.file_type()?.is_dir() {
-    //                     self.file_paths.push();
-    //                 }
-    //
-    //             }
-    //         } else {
-    //             self.file_paths.push(i.clone());
-    //         }
-    //     }
-    //
-    //     Ok(())
-    // }
 }
-pub fn search<'a>(
-    query: &str,
-    contents: &'a str,
-    config: &Config,
-) -> impl Iterator<Item = (usize, &'a str)> {
+
+pub fn search<'a>(contents: &'a str, config: &Config) -> impl Iterator<Item = (usize, &'a str)> {
     let query = if config.ignore_case {
-        query.to_lowercase()
+        config.query.to_lowercase()
     } else {
-        query.to_string()
+        config.query.to_string()
     };
     contents
         .lines()
@@ -101,38 +82,46 @@ pub fn search<'a>(
         .map(|(idx, line)| (idx + 1, line))
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     fn case_insensitive() {
-//         let query = "rUsT";
-//         let contents = "\
-// Rust:
-// safe, fast, productive.
-// Pick three.
-// Trust me.";
-//
-//         assert_eq!(
-//             vec!["Rust:", "Trust me."],
-//             search_case_insensitive(query, contents)
-//         );
-//     }
-//
-//     #[test]
-//     fn inverse() {
-//         let query = "bob";
-//         let contents = "\
-// jeff
-// jeffbob
-// bobbardly jeff
-// hi
-// hey
-// bObbS";
-//         assert_eq!(
-//             vec!["jeff", "hi", "hey", "bObbS"],
-//             search_inverse(query, contents)
-//         );
-//     }
-// }
+
+pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String>{
+    let m = fs::metadata(path)?;
+
+    let size = m.len();
+    let file_type = m.file_type();
+    let file_type = if file_type.is_dir() {
+        " "
+    } else if file_type.is_file() {
+        "󰈔 "
+    } else if file_type.is_symlink() {
+        " "
+    } else {
+        "other"
+    };
+
+    // bitwise op to get "3 permission digits"
+    let permission = m.permissions().mode() & 0o777;
+
+    Ok(format!("{} {file_type}{size}b {permission:o}", path.as_ref().display()))
+}
+
+
+#[cfg(test)]
+mod test {
+
+    use std::str::FromStr;
+
+use super::*;
+
+    #[test]
+    fn test_metadata() {
+        let path = PathBuf::from_str("smol.txt").unwrap();
+        match format_metadata(&path) {
+            Ok(s) => println!("{s}"),
+            _ => println!("no")
+        }
+    }
+
+
+
+
+}
