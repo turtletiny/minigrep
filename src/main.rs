@@ -42,7 +42,12 @@ fn run(config: &Config) -> Result<(), Box<dyn Error>> {
 fn grep_1_file(path: &Path, config: &Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(path)?;
 
-    println!("{}", format_metadata(&path).unwrap());
+    if config.show_stat {
+        println!("{}", format_metadata(&path).unwrap());
+    } else {
+        println!("{}", path.display());
+    }
+
     let iter = search(&contents, config);
     for (idx, line) in iter {
         println!("{idx}: {line}");
@@ -67,14 +72,6 @@ fn walk_dir(dir: &String, config: &Config) -> std::io::Result<()> {
     Ok(())
 }
 
-fn help_msg() {
-    println!("USAGE:");
-    println!("grep [OPTIONS] PATTERN [PATHS]");
-    println!();
-    println!("SEARCH OPTIONS:");
-    println!("  -i    Case insensitive search");
-    println!("  -v    Invert matching (match lines without pattern");
-}
 
 #[cfg(test)]
 
@@ -87,6 +84,7 @@ mod test {
             query: "pig".to_string(),
             file_paths: Vec::new(),
             ignore_case: true,
+            show_stat: true,
             inverse: false,
         };
         walk_dir(&".".to_string(), &config);

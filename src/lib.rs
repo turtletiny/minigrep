@@ -1,6 +1,6 @@
 // const CONFIG_PATH: &str = "config.toml";
 
-use std::fs;
+use std::{fs, process};
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
@@ -10,24 +10,37 @@ pub struct Config {
     pub file_paths: Vec<String>,
     pub ignore_case: bool,
     pub inverse: bool,
+    pub show_stat: bool,
 }
 
 impl Config {
     pub fn build(args: &[String]) -> Result<Config, &'static str> {
         let arg_count = args.len();
+
+        if args[1] == "-h" {
+            help_msg();
+            return Err("u received help");
+        }
+
         if arg_count < 3 {
-            return Err("Not enough arguments");
+            return Err("minigrep [FLAGS] [PATTERN] [PATHS]");
         }
 
         let mut ignore_case = false;
         let mut inverse = false;
+        let mut show_stat = false;
 
         let mut i = 1;
         while i < arg_count && args[i].starts_with('-') {
             for b in args[i].as_bytes().iter().skip(1) {
                 match b {
+                    b'h' => {
+                        help_msg();
+                        return Err("");
+                    }
                     b'v' => inverse = true,
                     b'i' => ignore_case = true,
+                    b's' => show_stat = true,
                     _ => return Err("unrecognised flag"),
                 }
             }
@@ -53,6 +66,7 @@ impl Config {
             file_paths,
             ignore_case,
             inverse,
+            show_stat,
         })
     }
 }
@@ -82,8 +96,7 @@ pub fn search<'a>(contents: &'a str, config: &Config) -> impl Iterator<Item = (u
         .map(|(idx, line)| (idx + 1, line))
 }
 
-
-pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String>{
+pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String> {
     let m = fs::metadata(path)?;
 
     let size = m.len();
@@ -101,27 +114,39 @@ pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String>{
     // bitwise op to get "3 permission digits"
     let permission = m.permissions().mode() & 0o777;
 
-    Ok(format!("{} {file_type}{size}b {permission:o}", path.as_ref().display()))
+    Ok(format!(
+        "{} {file_type}{size}b {permission:o}",
+        path.as_ref().display()
+    ))
 }
 
+pub fn help_msg() {
+    println!("USAGE:");
+    println!("grep [OPTIONS] PATTERN [PATHS]");
+    println!();
+
+    println!("SEARCH OPTIONS:");
+    println!("  -i    Case insensitive search");
+    println!("  -v    Invert matching (match lines without pattern");
+    println!();
+
+    println!("STAT OPTIONS: ");
+    println!("  -s    show file statistics, similar to ls -L");
+}
 
 #[cfg(test)]
 mod test {
 
     use std::str::FromStr;
 
-use super::*;
+    use super::*;
 
     #[test]
     fn test_metadata() {
         let path = PathBuf::from_str("smol.txt").unwrap();
         match format_metadata(&path) {
             Ok(s) => println!("{s}"),
-            _ => println!("no")
+            _ => println!("no"),
         }
     }
-
-
-
-
 }

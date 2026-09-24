@@ -8,9 +8,7 @@ A continuation of the minigrep project in the Rust Book
 
 
 ## To-Do
-- add a flag for showing STAT (default should be OFF, for performance reasons)
-
-
+- add coloured text + options to configure it via minigrep.toml
 
 ### General
 
