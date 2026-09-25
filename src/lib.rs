@@ -1,8 +1,8 @@
 // const CONFIG_PATH: &str = "config.toml";
 
-use std::{fs, process};
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
+use std::{fs, process};
 
 #[derive(Debug)]
 pub struct Config {
@@ -96,6 +96,31 @@ pub fn search<'a>(contents: &'a str, config: &Config) -> impl Iterator<Item = (u
         .map(|(idx, line)| (idx + 1, line))
 }
 
+
+// NOTE: currently only assumes 1 match in a line 
+pub fn highlight_line(line: &String, query: &String) -> String {
+    let query_len = query.chars().count();
+    let query_first = query.chars().next().unwrap();
+    let mut res = String::with_capacity(line.len());
+    let last_pushed = 0;
+
+    for (i, c) in line.char_indices() {
+        if c == query_first && line[i..i+query_len] == *query {
+            res.push_str(
+                format!(
+                    "{}\x1b[1;33m{query}\x1b[0m{}",
+                    &line[last_pushed..(i)],
+                    &line[i + query_len..]
+                )
+                .as_str(),
+            );
+            break;
+        }
+    }
+
+    res
+}
+
 pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String> {
     let m = fs::metadata(path)?;
 
@@ -141,12 +166,25 @@ mod test {
 
     use super::*;
 
+    // #[test]
+    // fn test_metadata() {
+    //     let path = PathBuf::from_str("smol.txt").unwrap();
+    //     match format_metadata(&path) {
+    //         Ok(s) => println!("{s}"),
+    //         _ => println!("no"),
+    //     }
+    // }
+
     #[test]
-    fn test_metadata() {
-        let path = PathBuf::from_str("smol.txt").unwrap();
-        match format_metadata(&path) {
-            Ok(s) => println!("{s}"),
-            _ => println!("no"),
-        }
+    fn test_highlight() {
+        let query = String::from("bobly1");
+        let line = String::from("wbobly1IDK!");
+        // let res = cmpstr(&query, &line);
+        // println!("{res}");
+        println!("{}", highlight_line(&line, &query));
     }
+
+    // #[test]
+    // fn idk() {
+    // }
 }
