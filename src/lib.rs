@@ -1,8 +1,9 @@
 // const CONFIG_PATH: &str = "config.toml";
 
+use std::env;
+use std::fs::{self, File};
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
-use std::fs;
 
 #[derive(Debug)]
 pub struct Config {
@@ -106,7 +107,6 @@ pub fn search(contents: &str, config: &Config) -> impl Iterator<Item = (usize, S
         })
 }
 
-
 pub fn highlight_line(line: &str, query: &str, ignore_case: bool) -> String {
     if query.is_empty() {
         return line.to_owned();
@@ -122,10 +122,7 @@ pub fn highlight_line(line: &str, query: &str, ignore_case: bool) -> String {
             .char_indices()
             .nth(query_chars)
             .map(|(offset, _)| start + offset)
-            .or_else(|| {
-                (line[start..].chars().count() == query_chars)
-                    .then_some(line.len())
-            })
+            .or_else(|| (line[start..].chars().count() == query_chars).then_some(line.len()))
         else {
             break;
         };
@@ -148,6 +145,19 @@ pub fn highlight_line(line: &str, query: &str, ignore_case: bool) -> String {
 
     result.push_str(&line[last_end..]);
     result
+}
+
+pub fn create_config_file() {
+    let path = match env::var("HOME") {
+        Ok(h) => h + "/.config/minigrep/minigrep.toml",
+        Err(e) => {
+            println!("{e}");
+            return;
+        }
+    };
+    let mut file = File::create(path);
+
+    todo!();
 }
 
 pub fn format_metadata<P: AsRef<Path>>(path: &P) -> std::io::Result<String> {

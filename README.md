@@ -8,8 +8,6 @@ A continuation of the minigrep project in the Rust Book
 
 
 ## To-Do
-- integrate matched pattern highlighting into main fn
-- add multi pattern-ina-line highlighting
 - add coloured text + options to configure it via minigrep.toml
 
 ### General
@@ -24,9 +22,10 @@ A continuation of the minigrep project in the Rust Book
 
 ### Flags
 
-- [ ] --help
+- [X] --help
 - [X] -v
 - [X] -i
+- [ ] -w
 - [ ] -r
 - [ ] -n
 - [ ] -x

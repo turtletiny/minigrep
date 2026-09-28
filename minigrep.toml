@@ -1,2 +1,9 @@
+[options]
 ignore_case = false
 inverse_match = false
+show_stat = false
+
+
+[visuals]
+highlight_colour: "yellow"
+line_number_colour: "green"
